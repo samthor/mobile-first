@@ -1,0 +1,76 @@
+<polymer-element name="mobile-first" attributes="device">
+<template>
+  <style>
+
+  :host {
+    position: relative;
+    overflow: visible;
+    display: block;
+    height: 100%;
+  }
+
+  #wrapper {
+    position: relative;
+    height: 100%;
+    min-height: 568px;
+    overflow: scroll;
+  }
+
+  #device {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  #screen {
+    position: absolute;
+    width: 320px;
+    height: 568px;
+    top: 50%;
+    left: 50%;
+    margin-top: -284px;
+    margin-left: -160px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 2px;
+    overflow: scroll;
+  }
+
+  .d-iphone5 #device {
+    background-image: url(devices/iphone5.png);
+    background-size: 410px 820px;
+  }
+
+  </style>
+
+<div id="wrapper" class="d-iphone5">
+  <div id="device">
+  </div>
+  <div id="screen">
+    <content></content>
+  </div>
+</div>
+
+</template>
+<script>
+  Polymer({
+    device: 'iphone',
+
+    isMobile: null,
+
+    created: function() {
+      this.isMobile = (typeof window.orientation !== 'undefined');
+      console.info(this.isMobile, 'is mobile')
+
+      // TODO: Use a shrink/grow scroll hack listener to do this.
+      window.addEventListener('resize', this.resize.bind(this));
+      this.resize();
+    },
+    
+    resize: function() {
+      var rect = this.getBoundingClientRect();
+      console.info(rect.width);
+    }
+  });
+</script>
+</polymer-element>
