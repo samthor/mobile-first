@@ -18,9 +18,13 @@ as this will allow your `mobile-first` experience to take up the whole page.
 @homepage http://github.com/samthor/mobile-first
 -->
 
-<polymer-element name="mobile-first" attributes="mobile">
+<polymer-element name="mobile-first" attributes="mobile src">
 <template>
   <style>
+
+  .hidden {
+    display: none !important;
+  }
 
   :host {
     display: block;
@@ -49,6 +53,13 @@ as this will allow your `mobile-first` experience to take up the whole page.
     height: 100%;
   }
 
+  #screen iframe {
+    display: none;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
   .enabled #screen {
     position: absolute;
     width: 320px;
@@ -62,6 +73,10 @@ as this will allow your `mobile-first` experience to take up the whole page.
     overflow: scroll;
   }
 
+  .enabled #screen iframe {
+    display: block;
+  }
+
   .d-iphone5 #device {
     background-image: url(devices/iphone5.png);
     background-size: 410px 820px;
@@ -73,7 +88,10 @@ as this will allow your `mobile-first` experience to take up the whole page.
   <div id="device">
   </div>
   <div id="screen">
-    <content></content>
+    <div id="content" class="hidden">
+      <content></content>
+    </div>
+    <iframe id="iframe" class="hidden "/>
   </div>
 </div>
 
@@ -83,34 +101,63 @@ as this will allow your `mobile-first` experience to take up the whole page.
 Polymer({
 
     /**
-     * Width (or below) at which this element is recognized as a mobile device.
-     */
-    mobile: 768,
+   * Width (or below) at which this element is recognized as a mobile device.
+   */
+  mobile: 768,
 
-    created: function() {
-    },
+  /**
+   * If set, used as the source of an iframe within this element.
+   */
+  src: null,
 
-    ready: function() {
-      // TODO: Use a shrink/grow scroll hack listener to do this.
-      window.addEventListener('resize', this.updateMF_.bind(this));
+  created: function() {
+    console.warn('???');
+  },
+
+  ready: function() {
+    // TODO: Use a shrink/grow scroll hack listener to do this.
+    window.addEventListener('resize', this.updateMF_.bind(this));
+    this.updateMF_();
+  },
+
+  attributeChanged: function(attrName, oldVal, newVal) {
+    switch (attrName) {
+    case 'src':
+      this.$.content.classList.toggle('hidden', !newVal);
+      this.$.iframe.classList.toggle('hidden', !!newVal);
+      this.$.iframe.src = newVal;
+      break;
+    case 'width':
       this.updateMF_();
-    },
-
-    attributeChanged: function(attrName, oldVal, newVal) {
-      this.updateMF_();
-    },
-
-    updateMF_: function() {
-      console.info('mobile', this.isMobile);
-      this.$.wrapper.classList.toggle('enabled', !this.isMobile);
-    },
-
-    get isMobile() {
-      //var isMobile = (typeof window.orientation !== 'undefined');
-      var rect = this.getBoundingClientRect();
-      return rect.width <= this.mobile || rect.height <= this.mobile / 2;
+      break;
     }
+    console.debug('attributeChanged', attrName, newVal);
+  },
 
-  });
+  updateMF_: function() {
+    var isMobile = this.isMobile;
+
+    console.info('mobile', isMobile);
+    this.$.wrapper.classList.toggle('enabled', !isMobile);
+
+    var window = this.$.iframe.contentWindow;
+    var userAgentProp = {
+      get: function() {
+        // TODO: only mobile?
+        return "Mozilla/5.0 (Linux; U; Android 4.0; en-us; LT28at Build/6.1.C.1.111) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+      },
+      set: function(v) { console.warn('something tried to set ua', v); }
+    };
+    Object.defineProperty(window.navigator, 'userAgent', userAgentProp);
+  },
+
+  get isMobile() {
+    //var isMobile = (typeof window.orientation !== 'undefined');
+    var rect = this.getBoundingClientRect();
+    return rect.width <= this.mobile || rect.height <= this.mobile / 2;
+  }
+
+});
+
 </script>
 </polymer-element>
