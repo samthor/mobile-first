@@ -18,9 +18,9 @@ as this will allow your `mobile-first` experience to take up the whole page.
 @homepage http://github.com/samthor/mobile-first
 -->
 
-<polymer-element name="mobile-first" attributes="mobile">
+<polymer-element name="mobile-first" attributes="mobile orientation">
 <template>
-  <style>
+<style>
 
   .hidden {
     display: none !important;
@@ -29,75 +29,228 @@ as this will allow your `mobile-first` experience to take up the whole page.
   :host {
     display: block;
     height: 100%;
+    overflow: hidden;
+    min-height: calc(568px + 8px);
+  }
+
+  #overlay {
+    cursor: pointer;
+    position: absolute;
+    margin: auto;
+    top: 50%;
+    margin-top: -50%;
+    width: 100%;
+    padding-bottom: 100%;
+    border-radius: 1000px;
+    background: rgba(0, 0, 0, 0.12);
   }
 
   #wrapper {
     position: relative;
-    height: 100%;
-    min-height: calc(568px + 8px);
+    height: 0;
+    top: 50%;
+    will-change: transform;
   }
 
-  #device {
-    display: none;
-    width: 100%;
-    height: 100%;
-    background-repeat: no-repeat;
-    background-position: center;
+  img#device {
+    pointer-events: none;
+    position: absolute;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    will-change: transform;
   }
 
-  .enabled #device {
-    display: block;
+  #devcontain {
+    overflow: hidden;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  #rotate {
+    transition: all 0.5s;
   }
 
   #screen {
     height: 100%;
+    will-change: transform;
   }
 
-  .enabled #screen {
-    position: absolute;
-    width: 320px;
-    height: 568px;
-    top: 50%;
-    left: 50%;
-    margin-top: -284px;
-    margin-left: -160px;
+  #wrapper.stable img#device,
+  #wrapper.stable #devcontain {
+    transition: all 0.5s;
+  }
+
+  .enabled .screen {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 2px;
+    overflow: hidden;
+
+    /** sensible defaults: this should happen in positionInCenter() */
+    position: absolute;
+    width: 480px;
+    height: 640px;
+    top: 50%;
+    left: 50%;
+    margin-top: -320px;
+    margin-left: -240px;
+  }
+
+  #content {
+    width: 100%;
+    height: 100%;
     overflow: scroll;
   }
 
-  .d-iphone5 #device {
-    background-image: url(devices/iphone5.png);
-    background-size: 410px 820px;
-  }
+</style>
 
-  </style>
-
-<div id="wrapper" class="d-iphone5">
-  <div id="device">
+<div id="overlay">
+</div>
+<div id="wrapper" class="stable">
+  <img id="device" />
+  <div id="devcontain">
+    <div id="rotate"></div>
   </div>
-  <div id="screen">
-    <content></content>
+  <div class="screen" id="screen">
+    <div id="content">
+      <content></content>
+    </div>
   </div>
 </div>
 
 </template>
 <script>
 
+(function() {
+
+var Device = function(width, height, background, opt_scale) {
+  this.width = width;
+  this.height = height;
+  this.background = background;
+  this.scale = +opt_scale || 2;
+};
+
+var Devices = {
+  'iphone5': new Device(320, 568, 'devices/iphone5.png', 2)
+};
+
+/**
+ * Helper that returns the angle from the center of the element being touched
+ * or interacted with, in radians.
+ *
+ * @param {Event!} event to examine
+ * @return {number} angle from center
+ */
+function deltaAngle(event) {
+  var width = event.target.offsetWidth;
+  var height = event.target.offsetHeight;
+  // TODO: touch events
+  var d = {
+    x: event.offsetX - width / 2,
+    y: event.offsetY - height / 2
+  }
+  var len = Math.sqrt(d.x*d.x + d.y*d.y);
+  var a = Math.acos(d.x / len);
+  if (d.y > 0) {
+    a = Math.PI + Math.PI - a;
+  }
+  return a;
+}
+
+/**
+ * Positions the given element in its parent's center. Does this by abusing
+ * the margin and the given size. The element cannot change size after this.
+ */
+function positionInCenter(elem, size) {
+  var style = elem.style;
+  style.position = 'absolute';
+  style.left = '50%';
+  style.top = '50%';
+  style.width = size.width + 'px';
+  style.height = size.height + 'px';
+  style.marginLeft = -size.width / 2 + 'px';
+  style.marginTop = -size.height / 2 + 'px';
+}
+
+/**
+ * Clamps the given radians value to [0, Math.PI * 2).
+ */
+function clampRads(rads) {
+  while (rads >= Math.PI * 2) { rads -= Math.PI * 2; }
+  while (rads < 0) { rads += Math.PI * 2; };
+  return rads;
+}
+
+function orientationFromAngle(rads) {
+  rads = clampRads(rads);
+
+  var orientation = 'up';
+  if (rads > Math.PI * 1.75) {
+    // already ok, up
+  } else if (rads > Math.PI * 1.25) {
+    orientation = 'left';
+  } else if (rads > Math.PI * 0.75) {
+    orientation = 'down';
+  } else if (rads > Math.PI * 0.25) {
+    orientation = 'right';
+  }
+  return orientation;
+}
+
+function angleFromOrientation(orientation) {
+  switch(orientation) {
+  case 'left':
+    return -Math.PI / 2;
+  case 'right':
+    return +Math.PI / 2;
+  case 'down':
+    return Math.PI;
+  }
+  return 0;
+}
+
 Polymer({
 
-    /**
+  /**
    * Width (or below) at which this element is recognized as a mobile device.
    */
   mobile: 768,
 
-  created: function() {
-  },
+  /**
+   * Orientation of device. The screen will always be rotated to face the
+   * user's perspective.
+   */
+  orientation: 'up',
 
   ready: function() {
     // TODO: Use a shrink/grow scroll hack listener to do this.
     window.addEventListener('resize', this.updateMF_.bind(this));
     this.updateMF_();
+    this.attributeChanged('device', null, 'iphone5');
+
+    // Registers rotate handlers.
+    (function(elem, callback) {
+      var previousAngle;
+
+      elem.addEventListener('mousemove', function(event) {
+        if (!event.which) return;
+        var angle = deltaAngle(event);
+        if (previousAngle !== undefined) {
+          var delta = previousAngle - angle;
+          callback(delta);
+        }
+        previousAngle = angle;
+      });
+
+      elem.addEventListener('mouseup', function(event) {
+        previousAngle = undefined;
+        callback();
+      });
+
+    }(this.$.overlay, this.rotateBy_.bind(this)));
   },
 
   attributeChanged: function(attrName, oldVal, newVal) {
@@ -105,12 +258,107 @@ Polymer({
     case 'width':
       this.updateMF_();
       break;
+    case 'device':
+
+      var d = Devices['iphone5'];
+
+      var img = this.$.device;
+      img.style.display = 'none';
+      img.src = '';
+      img.onload = function() {
+        positionInCenter(img, {
+          width: img.width / d.scale,
+          height: img.height / d.scale
+        });
+
+        img.style.display = '';
+      
+        console.info('ready image', img.width, img.height);
+      }.bind(this);
+      img.src = d.background;
+
+      this.updateScreenSize_();
+      break;
+    case 'orientation':
+      this.switchToOrientation_(newVal);
+      break;
+    }
+  },
+
+  resolveToStable_: true,
+
+  switchToOrientation_: function(orientation) {
+    this.$.wrapper.classList.add('stable');
+
+    var resolve = function() {
+      this.$.screen.appendChild(this.$.content);
+      this.$.screen.classList.remove('hidden');
+    }.bind(this);
+
+    var angle = angleFromOrientation(orientation);
+    if (angle == this.currentAngle) {
+      return resolve();
+    }
+
+    this.$.rotate.style.transform = 'rotateZ(' + -angle + 'rad)';
+
+    this.currentAngle = angle;
+    this.updateScreenSize_();
+    this.resolveToStable_ = window.setTimeout(resolve, 500);
+  },
+
+  rotateBy_: function(delta) {
+    if (delta === undefined) {
+      var orientation = orientationFromAngle(this.currentAngle_);
+
+      if (this.getAttribute('orientation') == orientation) {
+        this.switchToOrientation_(orientation);
+      } else {
+        this.setAttribute('orientation', orientation);
+      }
+
+    } else {
+      var firstRotate = this.$.wrapper.classList.contains('stable');
+      if (firstRotate) {
+        this.$.rotate.appendChild(this.$.content);
+        this.$.screen.classList.add('hidden');
+      }
+
+      this.$.wrapper.classList.remove('stable');
+      this.currentAngle += delta;
     }
   },
 
   updateMF_: function() {
     var isMobile = this.isMobile;
     this.$.wrapper.classList.toggle('enabled', !isMobile);
+  },
+
+  updateScreenSize_: function() {
+    var d = Devices['iphone5'];
+
+    var screenSize = { width: d.width, height: d.height };
+    if (this.orientation == 'left' || this.orientation == 'right') {
+      screenSize = { width: screenSize.height, height: screenSize.width }; 
+    }
+    positionInCenter(this.$.screen, screenSize);
+
+    // only runs once (since is never effected by orientation)
+    positionInCenter(this.$.devcontain, d);
+    positionInCenter(this.$.rotate, screenSize);
+  },
+
+  currentAngle_: 0,
+
+  set currentAngle(x) {
+    var x = clampRads(x);
+    this.currentAngle_ = x;
+    this.$.device.style.transform = 'rotateZ(' + x + 'rad)';
+    this.$.devcontain.style.transform = 'rotateZ(' + x + 'rad)';
+  },
+
+  get currentAngle() {
+    return this.currentAngle_;
   },
 
   get isMobile() {
@@ -120,6 +368,8 @@ Polymer({
   }
 
 });
+
+}());
 
 </script>
 </polymer-element>
