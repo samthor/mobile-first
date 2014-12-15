@@ -33,7 +33,7 @@ as this will allow your `mobile-first` experience to take up the whole page.
     min-height: calc(568px + 8px);
   }
 
-  #overlay {
+  #backdrop {
     cursor: pointer;
     position: absolute;
     margin: auto;
@@ -107,7 +107,7 @@ as this will allow your `mobile-first` experience to take up the whole page.
 
 </style>
 
-<div id="overlay">
+<div id="backdrop">
 </div>
 <div id="wrapper" class="stable">
   <img id="device" />
@@ -250,7 +250,7 @@ Polymer({
         callback();
       });
 
-    }(this.$.overlay, this.rotateBy_.bind(this)));
+    }(this.$.backdrop, this.rotateBy_.bind(this)));
   },
 
   attributeChanged: function(attrName, oldVal, newVal) {
