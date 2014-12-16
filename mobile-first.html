@@ -18,7 +18,7 @@ as this will allow your `mobile-first` experience to take up the whole page.
 @homepage http://github.com/samthor/mobile-first
 -->
 
-<polymer-element name="mobile-first" attributes="mobile orientation">
+<polymer-element name="mobile-first" attributes="mobile orientation device">
 <template>
 <style>
 
@@ -114,7 +114,8 @@ var Device = function(width, height, background, opt_scale) {
 };
 
 var Devices = {
-  'iphone5': new Device(320, 568, 'devices/iphone5.png', 2)
+  'iphone5': new Device(320, 568, 'devices/iphone5.png', 2),
+  'nexus5': new Device(360, 640, 'devices/nexus5.png', 2)
 };
 
 /**
@@ -222,11 +223,23 @@ Polymer({
    */
   orientation: 'up',
 
+  /**
+   * The device type to show.
+   */
+  device: null,
+  defaultDevice_: null,
+
+  created: function() {
+    // choose random key from Devices
+    var choices = Object.keys(Devices);
+    this.defaultDevice_ = choices[Math.floor(Math.random() * choices.length)];
+  },
+
   ready: function() {
     // TODO: Use a shrink/grow scroll hack listener to do this.
     window.addEventListener('resize', this.updateMobileFirst_.bind(this));
+    this.updateDevice_();
     this.updateMobileFirst_();
-    this.attributeChanged('device', null, 'iphone5');
 
     // Registers rotate handlers.
     (function(elem, callback) {
@@ -259,23 +272,7 @@ Polymer({
       this.updateMobileFirst_();
       break;
     case 'device':
-      var d = Devices['iphone5'];
-      positionInCenter(this.$.dwindow, d);
-
-      // Reload the device image.
-      var img = this.$.dimg;
-      img.style.display = 'none';
-      img.src = '';
-      img.onload = function() {
-        positionInCenter(img, {
-          width: img.width / d.scale,
-          height: img.height / d.scale
-        });
-        img.style.display = '';
-      }.bind(this);
-      img.src = d.background;
-
-      this.updateOrientation_();
+      this.updateDevice_();
       break;
     case 'orientation':
       this.updateOrientation_();
@@ -283,8 +280,28 @@ Polymer({
     }
   },
 
+  updateDevice_: function() {
+    var d = this.deviceObject;
+    positionInCenter(this.$.dwindow, d);
+
+    // Reload the device image.
+    var img = this.$.dimg;
+    img.style.display = 'none';
+    img.src = '';
+    img.onload = function() {
+      positionInCenter(img, {
+        width: img.width / d.scale,
+        height: img.height / d.scale
+      });
+      img.style.display = '';
+    }.bind(this);
+    img.src = d.background;
+
+    this.updateOrientation_();
+  },
+
   updateOrientation_: function() {
-    var d = Devices['iphone5'];
+    var d = this.deviceObject;
     var angle = angleFromOrientation(this.orientation);
     rotateTo(this.$.main, -angle);
 
@@ -380,6 +397,10 @@ Polymer({
     //var isMobile = (typeof window.orientation !== 'undefined');
     var rect = this.getBoundingClientRect();
     return rect.width <= this.mobile || rect.height <= this.mobile / 2;
+  },
+
+  get deviceObject() {
+    return Devices[this.device] || Devices[this.defaultDevice_];
   }
 
 });
