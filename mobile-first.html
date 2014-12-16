@@ -247,6 +247,7 @@ Polymer({
     // Registers rotate handlers.
     (function(elem, callback) {
       var previousAngle;
+      var withinGesture = false;
 
       // TODO: touch listeners
       elem.addEventListener('mousemove', function(event) {
@@ -257,9 +258,12 @@ Polymer({
           callback(delta);
         }
         previousAngle = angle;
+        withinGesture = true;
       });
 
       function done() {
+        if (!withinGesture) return;
+        withinGesture = false;
         previousAngle = undefined;
         callback();
       }
