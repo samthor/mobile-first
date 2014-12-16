@@ -336,18 +336,12 @@ Polymer({
 
     window.clearTimeout(this.staticPositionTimeout_);
     this.staticPositionTimeout_ = true;
-    this.updateMobileFirst_();
 
     if (opt_delta === undefined) {
       this.$.device.classList.add('drift');
       this.maybeAlignDevice_();
-
-      this.staticPositionTimeout_ = window.setTimeout(function() {
-        this.staticPositionTimeout_ = null;
-        this.updateMobileFirst_();
-      }.bind(this), 400);  /* matches #main transition */
-
     } else {
+      this.updateMobileFirst_();
       this.$.device.classList.remove('drift');
       this.currentAngle += opt_delta;
       this.setAttribute('orientation', orientationFromAngle(this.currentAngle));
@@ -361,6 +355,13 @@ Polymer({
     }
     var angle = angleFromOrientation(this.orientation);
     this.currentAngle = angle;
+
+    this.staticPositionTimeout_ = window.setTimeout(function() {
+      this.staticPositionTimeout_ = null;
+      this.updateMobileFirst_();
+    }.bind(this), 400);  /* matches #main transition */
+
+    this.updateMobileFirst_();
   },
 
   currentAngle_: 0,
