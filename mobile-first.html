@@ -33,26 +33,31 @@ as this will allow your `mobile-first` experience to take up the whole page.
     min-height: calc(568px + 8px);
   }
 
-  #backdrop {
-    cursor: pointer;
-    position: absolute;
-    margin: auto;
-    top: 50%;
-    margin-top: -50%;
-    width: 100%;
-    padding-bottom: 100%;
-    border-radius: 1000px;
-    background: rgba(0, 0, 0, 0.12);
-  }
-
-  #wrapper {
+  .vertical-mid {
     position: relative;
     height: 0;
     top: 50%;
     will-change: transform;
   }
 
-  img#device {
+  #backdrop {
+    cursor: pointer;
+    position: absolute;
+    margin: auto;
+    margin-top: -50%;
+    width: 100%;
+    min-width: 1200px;
+    padding-bottom: 100%;
+    border-radius: 1000px;
+    background: rgba(0, 0, 0, 0.12);
+  }
+
+  #wrapper:active #device,
+  #wrapper:active #static {
+    pointer-events: none;
+  }
+
+  #device img {
     pointer-events: none;
     position: absolute;
     -webkit-touch-callout: none;
@@ -64,60 +69,35 @@ as this will allow your `mobile-first` experience to take up the whole page.
     will-change: transform;
   }
 
-  #devcontain {
-    overflow: hidden;
-    background: transparent;
-    pointer-events: none;
+  #device.drift {
+    /** transition for 'drop' to aligned phone */
+    transition: all 0.35s;
   }
 
-  #rotate {
-    transition: all 0.5s;
-  }
-
-  #screen {
+  .screen {
     height: 100%;
     will-change: transform;
-  }
-
-  #wrapper.stable img#device,
-  #wrapper.stable #devcontain {
-    transition: all 0.5s;
-  }
-
-  .enabled .screen {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 2px;
     overflow: hidden;
-
-    /** sensible defaults: this should happen in positionInCenter() */
-    position: absolute;
-    width: 480px;
-    height: 640px;
-    top: 50%;
-    left: 50%;
-    margin-top: -320px;
-    margin-left: -240px;
   }
 
-  #content {
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
+  #main {
+    /** internal screen transition */ 
+    transition: all 0.4s;
   }
 
 </style>
 
-<div id="backdrop">
-</div>
-<div id="wrapper" class="stable">
-  <img id="device" />
-  <div id="devcontain">
-    <div id="rotate"></div>
+<div id="wrapper" class="vertical-mid stable">
+  <div id="backdrop">
   </div>
-  <div class="screen" id="screen">
-    <div id="content">
-      <content></content>
+  <div id="device" class="drift">
+    <img id="dimg" />
+    <div id="dwindow" class="screen">
+      <!-- By default, content lives in faux-screen -->
+      <div id="main"><content id="content"></content></div>
     </div>
+  </div>
+  <div id="static">
   </div>
 </div>
 
@@ -175,6 +155,23 @@ function positionInCenter(elem, size) {
   style.marginTop = -size.height / 2 + 'px';
 }
 
+function rotateTo(elem, rads, forceTransform) {
+  if (!forceTransform) {
+    var tr = elem.style.transform;
+    var m = tr.match(/([-+\d\.]*)rad/);
+    var prev = m ? parseFloat(m[1]) : 0;
+    var delta = prev - rads;
+    if (delta > Math.PI) {
+      rads += Math.PI * 2;
+    } else if (delta < -Math.PI) {
+      rads -= Math.PI * 2;
+    }
+  }
+
+  elem.style.transform = 'rotateZ(' + rads + 'rad)';
+  elem.style.webkitTransform = elem.style.transform;
+}
+
 /**
  * Clamps the given radians value to [0, Math.PI * 2).
  */
@@ -227,14 +224,15 @@ Polymer({
 
   ready: function() {
     // TODO: Use a shrink/grow scroll hack listener to do this.
-    window.addEventListener('resize', this.updateMF_.bind(this));
-    this.updateMF_();
+    window.addEventListener('resize', this.updateMobileFirst_.bind(this));
+    this.updateMobileFirst_();
     this.attributeChanged('device', null, 'iphone5');
 
     // Registers rotate handlers.
     (function(elem, callback) {
       var previousAngle;
 
+      // TODO: touch listeners
       elem.addEventListener('mousemove', function(event) {
         if (!event.which) return;
         var angle = deltaAngle(event);
@@ -245,24 +243,27 @@ Polymer({
         previousAngle = angle;
       });
 
-      elem.addEventListener('mouseup', function(event) {
+      function done() {
         previousAngle = undefined;
         callback();
-      });
+      }
 
+      elem.addEventListener('mouseup', done);
+      elem.addEventListener('mouseout', done);
     }(this.$.backdrop, this.rotateBy_.bind(this)));
   },
 
   attributeChanged: function(attrName, oldVal, newVal) {
     switch (attrName) {
     case 'width':
-      this.updateMF_();
+      this.updateMobileFirst_();
       break;
     case 'device':
-
       var d = Devices['iphone5'];
+      positionInCenter(this.$.dwindow, d);
 
-      var img = this.$.device;
+      // Reload the device image.
+      var img = this.$.dimg;
       img.style.display = 'none';
       img.src = '';
       img.onload = function() {
@@ -270,82 +271,96 @@ Polymer({
           width: img.width / d.scale,
           height: img.height / d.scale
         });
-
         img.style.display = '';
-      
-        console.info('ready image', img.width, img.height);
       }.bind(this);
       img.src = d.background;
 
-      this.updateScreenSize_();
+      this.updateOrientation_();
       break;
     case 'orientation':
-      this.switchToOrientation_(newVal);
+      this.updateOrientation_();
       break;
     }
   },
 
-  resolveToStable_: true,
-
-  switchToOrientation_: function(orientation) {
-    this.$.wrapper.classList.add('stable');
-
-    var resolve = function() {
-      this.$.screen.appendChild(this.$.content);
-      this.$.screen.classList.remove('hidden');
-    }.bind(this);
-
-    var angle = angleFromOrientation(orientation);
-    if (angle == this.currentAngle) {
-      return resolve();
-    }
-
-    this.$.rotate.style.transform = 'rotateZ(' + -angle + 'rad)';
-
-    this.currentAngle = angle;
-    this.updateScreenSize_();
-    this.resolveToStable_ = window.setTimeout(resolve, 500);
-  },
-
-  rotateBy_: function(delta) {
-    if (delta === undefined) {
-      var orientation = orientationFromAngle(this.currentAngle_);
-
-      if (this.getAttribute('orientation') == orientation) {
-        this.switchToOrientation_(orientation);
-      } else {
-        this.setAttribute('orientation', orientation);
-      }
-
-    } else {
-      var firstRotate = this.$.wrapper.classList.contains('stable');
-      if (firstRotate) {
-        this.$.rotate.appendChild(this.$.content);
-        this.$.screen.classList.add('hidden');
-      }
-
-      this.$.wrapper.classList.remove('stable');
-      this.currentAngle += delta;
-    }
-  },
-
-  updateMF_: function() {
-    var isMobile = this.isMobile;
-    this.$.wrapper.classList.toggle('enabled', !isMobile);
-  },
-
-  updateScreenSize_: function() {
+  updateOrientation_: function() {
     var d = Devices['iphone5'];
+    var angle = angleFromOrientation(this.orientation);
+    rotateTo(this.$.main, -angle);
 
     var screenSize = { width: d.width, height: d.height };
     if (this.orientation == 'left' || this.orientation == 'right') {
       screenSize = { width: screenSize.height, height: screenSize.width }; 
     }
-    positionInCenter(this.$.screen, screenSize);
+    positionInCenter(this.$.main, screenSize);
+    positionInCenter(this.$.static, screenSize);
+    this.maybeAlignDevice_();
+  },
 
-    // only runs once (since is never effected by orientation)
-    positionInCenter(this.$.devcontain, d);
-    positionInCenter(this.$.rotate, screenSize);
+  updateMobileFirst_: function() {
+    var isMobile = this.isMobile;
+
+    this.$.wrapper.classList.toggle('hidden', isMobile);
+    if (isMobile) {
+      this.shadowRoot.appendChild(this.$.content);
+    } else if (this.staticPositionTimeout_) {
+      this.$.main.appendChild(this.$.content);
+      this.$.static.classList.add('hidden');
+    } else {
+      this.$.static.appendChild(this.$.content);
+      this.$.static.classList.remove('hidden');
+    }
+  },
+
+  /**
+   * While this is truthy, only position the inner content within the deivce:
+   * aka, potentially rotated twice (#device then #main).
+   *
+   * When it is false, we are confident that the content can be inserted within
+   * the never-rotating static element.
+   */
+  staticPositionTimeout_: null,
+
+  /**
+   * Rotate by a relative delta (in radians). If no value is passed, this means
+   * that a user gesture has stopped and that the device should orient towards
+   * the current orientation.
+   *
+   * @param {number=} opt_delta to rotate by, or undefined for finished gesture
+   * @private
+   */
+  rotateBy_: function(opt_delta) {
+    if (this.isMobile) {
+      return false;  // called after mock phone has gone away
+    }
+
+    window.clearTimeout(this.staticPositionTimeout_);
+    this.staticPositionTimeout_ = true;
+    this.updateMobileFirst_();
+
+    if (opt_delta === undefined) {
+      this.$.device.classList.add('drift');
+      this.maybeAlignDevice_();
+
+      this.staticPositionTimeout_ = window.setTimeout(function() {
+        this.staticPositionTimeout_ = null;
+        this.updateMobileFirst_();
+      }.bind(this), 400);  /* matches #main transition */
+
+    } else {
+      this.$.device.classList.remove('drift');
+      this.currentAngle += opt_delta;
+      this.setAttribute('orientation', orientationFromAngle(this.currentAngle));
+    }
+  },
+
+  maybeAlignDevice_: function() {
+    var withinGesture = !this.$.device.classList.contains('drift');
+    if (withinGesture) {
+      return;
+    }
+    var angle = angleFromOrientation(this.orientation);
+    this.currentAngle = angle;
   },
 
   currentAngle_: 0,
@@ -353,8 +368,7 @@ Polymer({
   set currentAngle(x) {
     var x = clampRads(x);
     this.currentAngle_ = x;
-    this.$.device.style.transform = 'rotateZ(' + x + 'rad)';
-    this.$.devcontain.style.transform = 'rotateZ(' + x + 'rad)';
+    rotateTo(this.$.device, x, !this.$.device.classList.contains('drift'));
   },
 
   get currentAngle() {
