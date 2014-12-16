@@ -210,6 +210,9 @@ function angleFromOrientation(orientation) {
   return 0;
 }
 
+var me = document.currentScript.ownerDocument;
+var baseURL = me.URL.replace(/\/[^/]*?$/, '/');
+
 Polymer({
 
   /**
@@ -295,7 +298,7 @@ Polymer({
       });
       img.style.display = '';
     }.bind(this);
-    img.src = d.background;
+    img.src = baseURL + d.background;
 
     this.updateOrientation_();
   },
