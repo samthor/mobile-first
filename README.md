@@ -5,6 +5,10 @@ The `mobile-first` Polymer element takes "Mobile First" to a whole new level. If
 
 The device can be rotated through mouse gestures, to view your site in landscape on the contained mock device.
 
+## Why?
+
+Why not?
+
 ## Usage
 
 You can include this element like this:
@@ -13,10 +17,19 @@ You can include this element like this:
       <h5>Your Page!</h5>
     </mobile-first>
 
-Alternatively, you might contain an iframe:
+Alternatively, you might contain a mobile-only site:
 
+    <style type="text/css">
+      /** Include this CSS for iframes so they fit the mock device. */
+      mobile-first > iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+    </style>
     <mobile-first>
-      <iframe src="mobile-site.html" style="width: 100%; height: 100%; border: 0"></iframe>
+      <iframe src="mobile-site.html"></iframe>
     </mobile-first>
 
 There are a few attributes that can be modified.
