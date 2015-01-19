@@ -1,0 +1,29 @@
+{
+  "name": "mobile-first",
+  "version": "1.0.0",
+  "authors": [
+    "Sam Thorogood <sam.thorogood@gmail.com>"
+  ],
+  "description": "Mobile First container",
+  "main": [
+    "mobile-first.html",
+    "devices/iphone5.png",
+    "devices/nexus5.png"
+  ],
+  "keywords": [
+    "responsive",
+    "web-components"
+  ],
+  "license": "Apache2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#>=0.5.2 <1.0.0"
+  }
+}
