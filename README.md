@@ -11,8 +11,9 @@ Why not?
 
 ## Usage
 
-You can include this element like this:
+You can check out this code, and then include this element like this:
 
+    <link rel="import" href="mobile-first.html" />
     <mobile-first>
       <h5>Your Page!</h5>
     </mobile-first>
@@ -40,7 +41,16 @@ There are a few attributes that can be modified.
 
 * `width` may be set to explicitly control the width at which the `mobile-first` element shows a mock device. Below this width, this element will act as a boring `div` that just contains its content -- ideal for your users who are already on a mobile device!
 
+### Bower
+
+This is also available via Bower:
+
+    $ bower install mobile_first
+
+You can then include it from `bower_components`:
+
+    <link rel="import" href="bower_components/mobile-first/mobile-first.html" />
+
 ## Support
 
 Tested on Chrome 39+, may work on other browsers. Be sure to include Polymer and the Web Components polyfills as required.
-
