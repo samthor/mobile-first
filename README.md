@@ -13,25 +13,29 @@ Why not?
 
 You can check out this code, and then include this element like this:
 
-    <link rel="import" href="mobile-first.html" />
-    <mobile-first>
-      <h5>Your Page!</h5>
-    </mobile-first>
+```html
+<link rel="import" href="mobile-first.html" />
+<mobile-first>
+  <h5>Your Page!</h5>
+</mobile-first>
+```
 
 Alternatively, you might contain a mobile-only site:
 
-    <style type="text/css">
-      /** Include this CSS for iframes so they fit the mock device. */
-      mobile-first > iframe {
-        display: block;
-        width: 100%;
-        height: 100%;
-        border: 0;
-      }
-    </style>
-    <mobile-first>
-      <iframe src="mobile-site.html"></iframe>
-    </mobile-first>
+```html
+<style type="text/css">
+  /** Include this CSS for iframes so they fit the mock device. */
+  mobile-first > iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>
+<mobile-first>
+  <iframe src="mobile-site.html"></iframe>
+</mobile-first>
+```
 
 There are a few attributes that can be modified.
 
@@ -49,7 +53,9 @@ This is also available via Bower:
 
 You can then include it from `bower_components`:
 
-    <link rel="import" href="bower_components/mobile-first/mobile-first.html" />
+```html
+<link rel="import" href="bower_components/mobile-first/mobile-first.html" />
+```
 
 ## Support
 
