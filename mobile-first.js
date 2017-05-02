@@ -121,6 +121,9 @@ const devices = {
   'nexus5': new Device(360, 640, 'devices/nexus5.png', 2),
 };
 
+const me = document.currentScript.ownerDocument;
+const baseURL = me.URL.replace(/\/[^/]*?$/, '/');
+
 /**
  * Helper that returns the angle from the center of the element being touched
  * or interacted with, in radians.
@@ -248,7 +251,6 @@ class MobileFirstElement extends HTMLElement {
     this.$ = {};
     Array.from(root.querySelectorAll('*[id]')).forEach(el => this.$[el.id] = el);
 
-
     // Registers rotate handlers.
     ((elem, callback) => {
       let previousAngle;
@@ -309,7 +311,7 @@ class MobileFirstElement extends HTMLElement {
       });
       img.hidden = false;
     };
-    img.src = d.background;  // TODO: baseURL
+    img.src = baseURL + d.background;
 
     this.updateOrientation_();
   }
