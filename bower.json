@@ -1,12 +1,12 @@
 {
   "name": "mobile-first",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "authors": [
     "Sam Thorogood <sam.thorogood@gmail.com>"
   ],
   "description": "Mobile First container",
   "main": [
-    "mobile-first.html",
+    "mobile-first.js",
     "devices/iphone5.png",
     "devices/nexus5.png"
   ],
@@ -23,7 +23,5 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-    "polymer": "Polymer/polymer#>=0.5.2 <1.0.0"
-  }
+  "dependencies": {}
 }
