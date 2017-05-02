@@ -21,22 +21,11 @@
 const t = document.createElement('template');
 t.content.innerHTML = `
 <style>
-.hidden {
-  display: none !important;
-}
-
 :host {
   display: block;
   height: 100%;
   overflow: hidden;
   min-height: calc(568px + 8px);
-}
-
-.vertical-mid {
-  position: relative;
-  height: 0;
-  top: 50%;
-  will-change: transform;
 }
 
 #backdrop {
@@ -50,6 +39,13 @@ t.content.innerHTML = `
   background: rgba(0, 0, 0, 0.12);
 }
 
+#wrapper {
+  position: relative;
+  height: 0;
+  top: 50%;
+  will-change: transform;
+}
+
 #wrapper:active #device,
 #wrapper:active #static {
   pointer-events: none;
@@ -58,22 +54,17 @@ t.content.innerHTML = `
 #device img {
   pointer-events: none;
   position: absolute;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   will-change: transform;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-#device.drift {
+#device.settle {
   /** transition for 'drop' to aligned phone */
   transition: all 0.35s;
 }
 
 .screen {
-  height: 100%;
   will-change: transform;
   overflow: hidden;
 }
@@ -91,10 +82,9 @@ t.content.innerHTML = `
   background: rgba(255, 255, 255, 0.95);
 }
 </style>
-<div id="wrapper" class="vertical-mid stable">
-  <div id="backdrop">
-  </div>
-  <div id="device" class="drift">
+<div id="wrapper">
+  <div id="backdrop"></div>
+  <div id="device" class="settle">
     <img id="dimg" />
     <div id="dwindow" class="screen">
       <div id="main">
@@ -305,10 +295,8 @@ class MobileFirstElement extends HTMLElement {
     img.hidden = true;
     img.src = '';
     img.onload = _ => {
-      positionInCenter(img, {
-        width: img.width / d.scale,
-        height: img.height / d.scale,
-      });
+      img.width = img.width / d.scale;
+      img.height = img.height / d.scale;
       img.hidden = false;
     };
     img.src = baseURL + d.background;
@@ -336,15 +324,15 @@ class MobileFirstElement extends HTMLElement {
   updateMobileFirst_() {
     const isMobile = this.isMobile;
 
-    this.$.wrapper.classList.toggle('hidden', isMobile);
+    this.$.wrapper.hidden = isMobile;
     if (isMobile) {
       this.shadowRoot.appendChild(this.$.content);
     } else if (this.staticPositionTimeout_) {
       this.$.main.appendChild(this.$.content);
-      this.$.static.classList.add('hidden');
+      this.$.static.hidden = true;
     } else {
       this.$.static.appendChild(this.$.content);
-      this.$.static.classList.remove('hidden');
+      this.$.static.hidden = false;
     }
   }
 
@@ -357,11 +345,11 @@ class MobileFirstElement extends HTMLElement {
     this.staticPositionTimeout_ = true;
 
     if (opt_delta === undefined) {
-      this.$.device.classList.add('drift');
+      this.$.device.classList.add('settle');
       this.maybeAlignDevice_();
     } else {
       this.updateMobileFirst_();
-      this.$.device.classList.remove('drift');
+      this.$.device.classList.remove('settle');
       this.angle += opt_delta;
       this.orientation_ = orientationFromAngle(this.angle);
       this.updateOrientation_();  // TODO: this is the only place we set orientation
@@ -369,10 +357,8 @@ class MobileFirstElement extends HTMLElement {
   }
 
   maybeAlignDevice_() {
-    const withinGesture = !this.$.device.classList.contains('drift');
-    if (withinGesture) {
-      return;
-    }
+    const settled = this.$.device.classList.contains('settle');
+    if (!settled) { return; }
     const angle = angleFromOrientation(this.orientation_);
     this.angle = angle;
 
@@ -387,7 +373,7 @@ class MobileFirstElement extends HTMLElement {
   set angle(x) {
     x = clampRads(x);
     this.angle_ = x;
-    rotateTo(this.$.device, x, !this.$.device.classList.contains('drift'));
+    rotateTo(this.$.device, x, !this.$.device.classList.contains('settle'));
   }
 
   get angle() {
