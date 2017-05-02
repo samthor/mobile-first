@@ -1,7 +1,10 @@
 mobile-first
 ============
 
-The `mobile-first` Polymer element takes "Mobile First" to a whole new level. If viewed on a desktop or tablet, it will embed its content within a mock image of a mobile device. This will allow your users to experience your site as you originally intended. [Show me a demo!](http://samthor.github.io/mobile-first/)
+The `mobile-first` custom element takes "Mobile First" to a whole new level.
+If viewed on a desktop or tablet, it will embed its content within a mock image of a mobile device.
+This will allow your users to experience your site as you originally intended.
+[Show me a demo!](http://samthor.github.io/mobile-first/)
 
 The device can be rotated through mouse gestures, to view your site in landscape on the contained mock device.
 
@@ -14,7 +17,7 @@ Why not?
 You can check out this code, and then include this element like this:
 
 ```html
-<link rel="import" href="mobile-first.html" />
+<script src="mobile-first.js"></script>
 <mobile-first>
   <h5>Your Page!</h5>
 </mobile-first>
@@ -41,9 +44,8 @@ There are a few attributes that can be modified.
 
 * `device` controls the mock device used: currently, this supports "nexus5" and "iphone5". By default, `mobile-first` chooses a random device from its available devices.
 
-* The `orientation` attribute may be set to either "up", "down", "left" or "right". The default is "up", and this value will be changed as the user performs gestures on the device.
-
-* `width` may be set to explicitly control the width at which the `mobile-first` element shows a mock device. Below this width, this element will act as a boring `div` that just contains its content -- ideal for your users who are already on a mobile device!
+* `width` may be set to explicitly control the width at which the `mobile-first` element shows a mock device.
+  Below this width, this element will act as a boring `div` that just contains its content—ideal for your users who are already on a mobile device!
 
 ### Bower
 
@@ -54,9 +56,9 @@ This is also available via Bower:
 You can then include it from `bower_components`:
 
 ```html
-<link rel="import" href="bower_components/mobile-first/mobile-first.html" />
+<script src="bower_components/mobile-first/mobile-first.js"></script>
 ```
 
 ## Support
 
-Tested on Chrome 39+, may work on other browsers. Be sure to include Polymer and the Web Components polyfills as required.
+Tested on Chrome 58+ and Safari 10.1 (without animations), may work on other browsers that support Custom Elements and Shadow DOM.
