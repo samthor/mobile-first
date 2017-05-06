@@ -18,6 +18,10 @@ You can check out this code, and then include this element like this:
 
 ```html
 <script src="mobile-first.js"></script>
+<script type="module">
+  // or using ES6 modules...
+  import './mobile-first.js';
+</script>
 <mobile-first>
   <h5>Your Page!</h5>
 </mobile-first>
