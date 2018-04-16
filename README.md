@@ -51,17 +51,9 @@ There are a few attributes that can be modified.
 * `width` may be set to explicitly control the width at which the `mobile-first` element shows a mock device.
   Below this width, this element will act as a boring `div` that just contains its content—ideal for your users who are already on a mobile device!
 
-### Bower
+### Install
 
-This is also available via Bower:
-
-    $ bower install mobile_first
-
-You can then include it from `bower_components`:
-
-```html
-<script src="bower_components/mobile-first/mobile-first.js"></script>
-```
+Install `mobile-first-element` on NPM (or `mobile-first` with Bower), and include the source.
 
 ## Support
 
