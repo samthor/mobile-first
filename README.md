@@ -1,7 +1,7 @@
 The `mobile-first` custom element takes "Mobile First" to a whole new level.
 If viewed on a desktop or tablet, it will embed its content within a mock image of a mobile device.
 This will allow your users to experience your site as you originally intended.
-[Play with the demo!](http://samthor.github.io/mobile-first/)
+[Play with the demo!](https://samthor.github.io/mobile-first/)
 
 The device can be rotated through mouse gestures, to view your site in landscape on the contained mock device.
 
