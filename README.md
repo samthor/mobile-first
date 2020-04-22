@@ -1,10 +1,7 @@
-mobile-first
-============
-
 The `mobile-first` custom element takes "Mobile First" to a whole new level.
 If viewed on a desktop or tablet, it will embed its content within a mock image of a mobile device.
 This will allow your users to experience your site as you originally intended.
-[Show me a demo!](http://samthor.github.io/mobile-first/)
+[Play with the demo!](http://samthor.github.io/mobile-first/)
 
 The device can be rotated through mouse gestures, to view your site in landscape on the contained mock device.
 
@@ -12,22 +9,24 @@ The device can be rotated through mouse gestures, to view your site in landscape
 
 Why not?
 
+Maybe you can use this for mobile demos.
+
 ## Usage
 
-You can check out this code, and then include this element like this:
+Install via `mobile-first-element` and include the element:
 
 ```html
-<script src="mobile-first.js"></script>
 <script type="module">
-  // or using ES6 modules...
-  import './mobile-first.js';
+  import './node-modules/mobile-first-element/mobile-first.js';
+  // or possibly...
+  import 'mobile-first-element';
 </script>
 <mobile-first>
   <h5>Your Page!</h5>
 </mobile-first>
 ```
 
-Alternatively, you might contain a mobile-only site:
+Alternatively, include an `<iframe>` to another site:
 
 ```html
 <style type="text/css">
@@ -44,16 +43,16 @@ Alternatively, you might contain a mobile-only site:
 </mobile-first>
 ```
 
+(A lot of major site use [`X-Frame-Options`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options) to prevent this, though—maybe just contain your own content.)
+
+### Configuration
+
 There are a few attributes that can be modified.
 
 * `device` controls the mock device used: currently, this supports "nexus5" and "iphone5". By default, `mobile-first` chooses a random device from its available devices.
 
 * `width` may be set to explicitly control the width at which the `mobile-first` element shows a mock device.
-  Below this width, this element will act as a boring `div` that just contains its content—ideal for your users who are already on a mobile device!
-
-### Install
-
-Install `mobile-first-element` on NPM (or `mobile-first` with Bower), and include the source.
+  Below this width, this element will act as a boring `div` that just contains its content—ideal for your users who are _already_ on a mobile device!
 
 ## Support
 
