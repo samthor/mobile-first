@@ -1,11 +1,8 @@
 {
   "name": "mobile-first-element",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Mobile First custom element",
   "main": "mobile-first.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/samthor/mobile-first.git"
@@ -21,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/samthor/mobile-first/issues"
   },
-  "homepage": "https://github.com/samthor/mobile-first#readme"
+  "homepage": "https://github.com/samthor/mobile-first#readme",
+  "_mysterious-value": "abcd",
+  "some-hash": "def",
+  "config": {
+    "_build-hash": 1234,
+    "hash": "def"
+  }
 }
